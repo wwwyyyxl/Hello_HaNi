@@ -29,6 +29,8 @@ struct Index {
    * 使用 @Local 替代 V1 的 @State，状态生命周期仅局限于组件内部。
    * Using @Local replaces @State from V1, confining state strictly to the local component.
    */
+  @Local isShowSheet: boolean = false;
+
   @Local projects: ProjectItem[] = [
     new ProjectItem(
       "HarmonyOS 元服务",
@@ -54,14 +56,31 @@ struct Index {
       .width("100%")
       .height("100%")
       .padding({ top: 40, left: 16, right: 16 })
-      // 原生内置颜色背景，完美适配系统暗黑/明亮模式
-      .backgroundColor($r("sys.color.background_primary"))
+      // 替换纯色背景为带有微弱动态感的高阶线性渐变色 (如深邃蓝到暗夜黑的过渡)
+      .linearGradient({
+        angle: 180,
+        colors: [
+          ["#0F172A", 0.0], // 深邃蓝
+          ["#020617", 1.0]  // 暗夜黑
+        ]
+      })
 
       // 4. 底层联系悬浮按钮 (Contact FAB)
       this.ContactFAB()
     }
     .width("100%")
-    .height("100%");
+    .height("100%")
+    // 原生半模态交互 (BindSheet)，高度约为屏幕 1/3，自带平滑和回弹动效
+    .bindSheet(this.isShowSheet, this.ContactSheet(), {
+      height: '33%',
+      dragBar: true,
+      backgroundColor: Color.Transparent,
+      blurStyle: BlurStyle.Thick, // 亚克力面板效果
+      showClose: false,
+      onDisappear: () => {
+        this.isShowSheet = false;
+      }
+    });
   }
 
   @Builder
@@ -81,10 +100,10 @@ struct Index {
       Text("哈尼 (HaNi)")
         .fontSize(24)
         .fontWeight(FontWeight.Bold)
-        .fontColor($r("sys.color.font_primary"))
+        .fontColor(Color.White)
       Text("高级 HarmonyOS 开发工程师 | 极客")
         .fontSize(14)
-        .fontColor($r("sys.color.font_secondary"))
+        .fontColor("#B3FFFFFF")
     }
     .width("100%")
     .alignItems(HorizontalAlign.Center);
@@ -119,7 +138,9 @@ struct Index {
     })
     .margin({ right: 8, bottom: 8 })
     .border({ width: 1, color: color, radius: 16 })
-    .backgroundColor($r("sys.color.background_secondary"));
+    // 使用原生的 backgroundBlurStyle 营造通透的亚克力悬浮感
+    .backgroundColor(Color.Transparent)
+    .backgroundBlurStyle(BlurStyle.Thin);
   }
 
   @Builder
@@ -128,7 +149,7 @@ struct Index {
       Text("作品集展示 (Projects)")
         .fontSize(18)
         .fontWeight(FontWeight.Bold)
-        .fontColor($r("sys.color.font_primary"))
+        .fontColor(Color.White)
         .width("100%")
       WaterFlow() {
         // 使用 V2 范式的 Repeat 替代旧版 ForEach，实现高性能渲染机制
@@ -139,19 +160,21 @@ struct Index {
                 Text(obj.item.title)
                   .fontSize(16)
                   .fontWeight(FontWeight.Bold)
-                  .fontColor($r("sys.color.font_primary"))
+                  .fontColor(Color.White)
                 Text(obj.item.description)
                   .fontSize(12)
-                  .fontColor($r("sys.color.font_secondary"))
+                  .fontColor("#B3FFFFFF")
                   .maxLines(3)
                   .textOverflow({ overflow: TextOverflow.Ellipsis })
               }
               .alignItems(HorizontalAlign.Start)
               .padding(16)
               .width("100%")
-              .backgroundColor($r("sys.color.background_primary"))
+              // 使用原生的 backgroundBlurStyle 营造通透的亚克力悬浮感
+              .backgroundColor(Color.Transparent)
+              .backgroundBlurStyle(BlurStyle.Thin)
               .borderRadius(12)
-              .shadow({ radius: 10, color: "#0D000000", offsetY: 4 })
+              .shadow({ radius: 10, color: "#2A000000", offsetY: 4 })
               .onClick(() => {
                 // TODO: 预留路由跳转逻辑占位
                 // Router placeholder for navigating to project details
@@ -186,7 +209,47 @@ struct Index {
     .shadow({ radius: 12, color: "#4D0A59F7", offsetY: 6 })
     .margin({ right: 24, bottom: 36 })
     .onClick(() => {
-      // TODO: 弹出联系方式（可配合 BindSheet 或 CustomDialog）
+      // 打开半模态交互面板
+      this.isShowSheet = true;
     });
+  }
+
+  @Builder
+  ContactSheet() {
+    Column({ space: 16 }) {
+      Text("你好，我是哈尼 👋")
+        .fontSize(20)
+        .fontWeight(FontWeight.Bold)
+        .fontColor($r("sys.color.font_primary"))
+        .margin({ top: 16 })
+        
+      Text("对极致体验有着偏执的追求，期待与您交流。")
+        .fontSize(14)
+        .fontColor($r("sys.color.font_secondary"))
+
+      // 原生的微信二维码占位
+      QRCode("WeChat: HaNi_Geek_Coder")
+        .width(120)
+        .height(120)
+        .color("#000000")
+        .backgroundColor(Color.White)
+        .padding(8)
+        .borderRadius(12)
+        .margin({ top: 8, bottom: 8 })
+
+      Button("一键复制邮箱")
+        .type(ButtonType.Capsule)
+        .fontColor(Color.White)
+        .backgroundColor("#0A59F7")
+        .width('60%')
+        .shadow({ radius: 8, color: "#4D0A59F7", offsetY: 4 })
+        .onClick(() => {
+          // 这里可集成系统剪贴板能力
+        })
+    }
+    .width("100%")
+    .height("100%")
+    .padding(24)
+    .alignItems(HorizontalAlign.Center)
   }
 }
