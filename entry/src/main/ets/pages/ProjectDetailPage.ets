@@ -12,7 +12,7 @@
  *
  * 【V2 状态管理】@ComponentV2 + @Local 管理页面内部状态
  */
-import { ProjectItem } from '../components/ProjectCard';
+import { ProjectItem } from '../viewmodel/ProjectViewModel';
 import { HapticManager } from '../managers/HapticManager';
 import { curves } from '@kit.ArkUI';
 
